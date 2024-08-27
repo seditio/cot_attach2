@@ -1,8 +1,9 @@
-<?php defined('COT_CODE') or die('Wrong URL');
+<?php
+defined('COT_CODE') or die('Wrong URL');
 
 $row = $db->query("SELECT * FROM $db_attach WHERE att_id = ?", array($id))->fetch();
-if (!$row)
-{
+
+if (!$row) {
 	cot_die_message(404);
 }
 
@@ -18,88 +19,67 @@ $file = $row['att_path'];
 @error_reporting(0);
 
 // Clear and disable output buffer
-while (ob_get_level() > 0)
-{
+while (ob_get_level() > 0) {
 	ob_end_clean();
 }
 
 // Make sure the files exists, otherwise we are wasting our time
-if (!file_exists($file))
-{
+if (!file_exists($file)) {
 	cot_die_message(404);
 }
 
 // Get the 'Range' header if one was sent
-if (isset($_SERVER['HTTP_RANGE']))
-{
+if (isset($_SERVER['HTTP_RANGE'])) {
 	$range = $_SERVER['HTTP_RANGE']; // IIS/Some Apache versions
-}
-elseif (function_exists('apache_request_headers') && $apache = apache_request_headers())
-{
+} elseif (function_exists('apache_request_headers') && $apache = apache_request_headers()) {
 	// Try Apache again
 	$headers = array();
 	foreach ($apache as $header => $val) $headers[strtolower($header)] = $val;
-	if (isset($headers['range']))
-	{
+	if (isset($headers['range'])) {
 		$range = $headers['range'];
-	}
-	else
-	{
+	} else {
 		// We can't get the header/there isn't one set
 		$range = FALSE;
 	}
-}
-else
-{
+} else {
 	// We can't get the header/there isn't one set
 	$range = FALSE;
 }
 
 // Get the data range requested (if any)
 $filesize = filesize($file);
-if ($range)
-{
+if ($range) {
 	$partial = true;
 	list($param, $range) = explode('=', $range);
-	if (strtolower(trim($param)) != 'bytes')
-	{
+	if (strtolower(trim($param)) != 'bytes') {
 		// Bad request - range unit is not 'bytes'
 		cot_die_message(400);
 	}
 	$range = explode(',', $range);
 	$range = explode('-', $range[0]); // We only deal with the first requested range
-	if (count($range) != 2)
-	{
+	if (count($range) != 2) {
 		// Bad request - 'bytes' parameter is not valid
 		cot_die_message(400);
 	}
-	if ($range[0] === '')
-	{
+	if ($range[0] === '') {
 		// First number missing, return last $range[1] bytes
 		$end = $filesize - 1;
 		$start = $end - intval($range[0]);
-	}
-	elseif ($range[1] === '')
-	{
+	} elseif ($range[1] === '') {
 		// Second number missing, return from byte $range[0] to end
 		$start = intval($range[0]);
 		$end = $filesize - 1;
-	}
-	else
-	{
+	} else {
 		// Both numbers present, return specific range
 		$start = intval($range[0]);
 		$end = intval($range[1]);
-		if ($end >= $filesize || (!$start && (!$end || $end == ($filesize - 1))))
-		{
+		if ($end >= $filesize || (!$start && (!$end || $end == ($filesize - 1)))) {
 			// Invalid range/whole file specified, return whole file
 			$partial = false;
 		}
 	}
 	$length = $end - $start + 1;
-}
-else
-{
+} else {
 	 // No range requested
 	$partial = false;
 }
@@ -110,31 +90,25 @@ header("Content-Length: $filesize");
 header('Content-Disposition: attachment; filename="'.$row['att_filename'].'"');
 header('Accept-Ranges: bytes');
 
-if ($partial)
-{
+if ($partial) {
 	// if requested, send extra headers and part of file...
 	header('HTTP/1.1 206 Partial Content');
 	header("Content-Range: bytes $start-$end/$filesize");
-	if (!$fp = fopen($file, 'r'))
-	{
+	if (!$fp = fopen($file, 'r')) {
 		// Error out if we can't read the file
 		cot_die_message(500);
 	}
-	if ($start)
-	{
+	if ($start) {
 		fseek($fp,$start);
 	}
-	while ($length)
-	{
+	while ($length) {
 		// Read in blocks of 8KB so we don't chew up memory on the server
 		$read = ($length > 8192) ? 8192 : $length;
 		$length -= $read;
 		echo fread($fp,$read);
 	}
 	fclose($fp);
-}
-else
-{
+} else {
 	// ...otherwise just send the whole file
 	readfile($file);
 }
@@ -144,8 +118,7 @@ else
  * @param  string $path File path
  * @return string       MIME type
  */
-function att_get_mime($path)
-{
+function att_get_mime($path) {
 	$mime_types = array(
 		'txt'  => 'text/plain',
 		'htm'  => 'text/html',
@@ -208,23 +181,18 @@ function att_get_mime($path)
 
     $ext = att_get_ext($path);
 
-	if (function_exists('mime_content_type'))
-	{
-		return mime_content_type($filename);
-	}
-	elseif (function_exists('finfo_open'))
-	{
+	if (function_exists('mime_content_type')) {
+		// return mime_content_type($filename);
+		return mime_content_type($path);
+	} elseif (function_exists('finfo_open')) {
 		$finfo = finfo_open(FILEINFO_MIME);
-		$mimetype = finfo_file($finfo, $filename);
+		// $mimetype = finfo_file($finfo, $filename);
+		$mimetype = finfo_file($finfo, $path);
 		finfo_close($finfo);
 		return $mimetype;
-	}
-	elseif (isset($mime_types[$ext]))
-	{
+	} elseif (isset($mime_types[$ext])) {
 		return $mime_types[$ext];
-	}
-	else
-	{
+	} else {
 		return 'application/octet-stream';
 	}
 }

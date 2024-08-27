@@ -83,5 +83,5 @@ if (!function_exists('att_thumb_bbcode'))
 	}
 }
 
-$text = preg_replace_callback('`\[att_thumb\?(.+?)\]`i', 'att_thumb_bbcode', $text);
-$text = preg_replace_callback('`\[att_image\?(.+?)\]`i', 'att_image_bbcode', $text);
+$text = preg_replace_callback('`\[att_thumb\?(.+?)\]`i', 'att_thumb_bbcode', is_null($text) ? "" : $text);
+$text = preg_replace_callback('`\[att_image\?(.+?)\]`i', 'att_image_bbcode', is_null($text) ? "" : $text);

@@ -20,8 +20,6 @@
 <title>{PHP.L.att_attachments}</title>
 <!-- Bootstrap CSS Toolkit styles -->
 <link rel="stylesheet" href="{PHP.cfg.plugins_dir}/attach2/lib/bootstrap/css/bootstrap.min.css">
-<!-- Generic page styles -->
-<link rel="stylesheet" href="{PHP.cfg.plugins_dir}/attach2/lib/upload/css/style.css">
 <!-- Bootstrap styles for responsive website layout, supporting different screen sizes -->
 <link rel="stylesheet" href="{PHP.cfg.plugins_dir}/attach2/lib/bootstrap/css/bootstrap-responsive.min.css">
 <!-- Bootstrap CSS fixes for IE6 -->
@@ -32,6 +30,8 @@
 <link rel="stylesheet" href="{PHP.cfg.plugins_dir}/attach2/lib/upload/css/jquery.fileupload-ui.css">
 <!-- CSS adjustments for browsers with JavaScript disabled -->
 <noscript><link rel="stylesheet" href="{PHP.cfg.plugins_dir}/attach2/lib/upload/css/jquery.fileupload-ui-noscript.css"></noscript>
+<!-- Generic page styles -->
+<link rel="stylesheet" href="{PHP.cfg.plugins_dir}/attach2/lib/upload/css/style.css">
 <!-- Shim to make HTML5 elements usable in older Internet Explorer versions -->
 <!--[if lt IE 9]><script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
 </head>
@@ -201,12 +201,12 @@
 if (attConfig === undefined) {
     var attConfig = {
         area: '{ATTACH_AREA}',
-        item: {ATTACH_ITEM},
+        item: '{ATTACH_ITEM}',
         exts: $.map('{ATTACH_EXTS}'.split(','), $.trim),
         accept: '{ATTACH_ACCEPT}',
-        maxsize: {ATTACH_MAXSIZE},
-        autoUpload: {PHP.cfg.plugin.attach2.autoupload},
-        sequential: {PHP.cfg.plugin.attach2.sequential}
+        maxsize: '{ATTACH_MAXSIZE}',
+        autoUpload: '{ATTACH_AUTOUPLOAD}',
+        sequential: '{ATTACH_SEQUENTIAL}'
     };
     var attLang = {
         attachFiles: '{PHP.L.att_attach}',

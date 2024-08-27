@@ -4,18 +4,17 @@
 
 <div id="attModal" class="jqmWindow">
 	<div id="attModalTitle">
-		<button id="attModalClose" class="jqmClose">
-				{PHP.L.Close} X
+		<button id="attModalClose" class="jqmClose btn btn-danger">
+			&times;
 		</button>
-		<span id="attModalTitleText">{PHP.L.att_attachments}</span>
 	</div>
 	<iframe id="attModalContent" src="">
 	</iframe>
 </div>
 
-<script type="text/javascript">
+<script>
 $(function() {
-	var loadInIframeModal = function(hash){
+	var loadInIframeModal = function(hash) {
 		var trigger = $(hash.t);
 		var modal = $(hash.w);
 		var url = trigger.attr('href');
@@ -32,8 +31,8 @@ $(function() {
 
 		$('#attModalClose').click(function() {
 			window.location.reload();
-		})
-	}
+		});
+	};
 	// initialise jqModal
 	$('#attModal').jqm({
 		modal: false,

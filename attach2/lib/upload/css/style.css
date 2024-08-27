@@ -10,6 +10,19 @@
  * http://www.opensource.org/licenses/MIT
  */
 
-body{
-  padding-top: 60px;
-}
+body          { padding: 0; }
+
+div.fileupload-buttonbar > div.span12	{ margin-bottom: 6px; }
+
+#attTable																	{  }
+	#attTable td.preview										{ width: 20%; }
+	#attTable td.name	      								{  }
+	#attTable td.name input.att-edit-title	{ width: 90%; }
+
+#attTable td.size				{ text-align: right; width: 15%; }
+#attTable td.delete			{ text-align: right; width: 20%; }
+
+.files .name *					{ width: auto; display: block; }
+.files .preview *       { width: auto!important; display: block; }
+
+div.progress  { margin: 0; }

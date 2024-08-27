@@ -1,4 +1,5 @@
-<?php defined('COT_CODE') or die('Wrong URL');
+<?php
+defined('COT_CODE') or die('Wrong URL');
 
 header('Pragma: no-cache');
 header('Cache-Control: no-store, no-cache, must-revalidate');
@@ -9,13 +10,12 @@ header('Access-Control-Allow-Methods: OPTIONS, HEAD, GET, POST, PUT, DELETE');
 header('Access-Control-Allow-Headers: X-File-Name, X-File-Type, X-File-Size');
 
 $filename = cot_import('file', 'R', 'TXT');
-if (!is_null($filename))
-{
+
+if (!is_null($filename)) {
 	$filename = mb_basename(stripslashes($filename));
 }
 
-switch ($_SERVER['REQUEST_METHOD'])
-{
+switch ($_SERVER['REQUEST_METHOD']) {
 	case 'OPTIONS':
 		break;
 	case 'HEAD':
@@ -24,22 +24,16 @@ switch ($_SERVER['REQUEST_METHOD'])
 		echo json_encode(att_ajax_get($area, $item, $filename));
 		break;
 	case 'POST':
-		if (isset($_REQUEST['_method']) && $_REQUEST['_method'] === 'DELETE')
-		{
+		if (isset($_REQUEST['_method']) && $_REQUEST['_method'] === 'DELETE') {
 			// Attachment removal for servers not supporting DELETE
 			$id = cot_import('id', 'R', 'INT');
 			header('Content-type: application/json');
-			if ($id > 0)
-			{
+			if ($id > 0) {
 				echo json_encode(array('success' => (bool) att_remove($id)));
-			}
-			else
-			{
+			} else {
 				echo json_encode(array('success' => false));
 			}
-		}
-		else
-		{
+		} else {
 			echo att_ajax_post();
 		}
 		break;
@@ -54,60 +48,50 @@ switch ($_SERVER['REQUEST_METHOD'])
  * @param  string  $filename Name of the original file
  * @return array             Data for JSON response
  */
-function att_ajax_get($area, $item, $filename = null)
-{
+function att_ajax_get($area, $item, $filename = null) {
 	global $cfg, $db, $db_attach, $sys;
 
-	if (is_null($filename) || empty($filename))
-	{
+	if (is_null($filename) || empty($filename)) {
 		$multi = true;
-		$res = $db->query("SELECT * FROM $db_attach
-			WHERE att_area = ? AND att_item = ? ORDER BY att_order",
-			array($area, (int)$item));
-	}
-	else
-	{
+		$res = Cot::$db->query("SELECT *
+			FROM $db_attach
+			WHERE att_area = ? AND att_item = ?
+			ORDER BY att_order", array($area, (int)$item));
+	} else {
 		$multi = false;
-		$res = $db->query("SELECT * FROM $db_attach
-			WHERE att_area = ? AND att_item = ? AND att_filename = ? LIMIT 1",
-			array($area, (int)$item, $filename));
+		$res = $db->query("SELECT *
+			FROM $db_attach
+			WHERE att_area = ? AND att_item = ? AND att_filename = ?
+			LIMIT 1", array($area, (int)$item, $filename));
 	}
 
-	if ($res->rowCount() == 0)
-	{
+	if ($res->rowCount() == 0) {
 		return null;
 	}
 
 	$files = array();
 
-	foreach ($res->fetchAll() as $row)
-	{
+	foreach ($res->fetchAll() as $row) {
 		$file = array(
 			'id'          => $row['att_id'],
 			'name'        => $row['att_filename'],
 			'size'        => (int) $row['att_size'],
 			'url'         => $cfg['mainurl'] . '/' . att_path($area, $item, $row['att_id'], $row['att_ext']),
 			'delete_type' => 'POST',
-			'delete_url'  => $cfg['mainurl'] . '/index.php?r=attach2&a=upload&id='.$row['att_id'].'&_method=DELETE&x='.$sys['xk'],
+			'delete_url'  => $cfg['mainurl'] . '/index.php?r=attach2&a=upload&id=' . $row['att_id'] . '&_method=DELETE&x=' .$sys['xk'],
 			'title'       => htmlspecialchars($row['att_title']),
 			'lastmod'     => $row['att_lastmod']
 		);
 
-		if ($row['att_img'])
-		{
+		if ($row['att_img']) {
 			$file['thumbnail_url'] = $cfg['mainurl'] . '/' . att_thumb($row['att_id']) . '?lastmod=' . $row['att_lastmod'];
-		}
-		else
-		{
+		} else {
 			$file['thumbnail_url'] = $cfg['mainurl'] . '/' . att_icon(att_get_ext($row['att_filename']));
 		}
 
-		if (!$multi)
-		{
+		if (!$multi) {
 			return $file;
-		}
-		else
-		{
+		} else {
 			$files[] = $file;
 		}
 	}
@@ -119,18 +103,15 @@ function att_ajax_get($area, $item, $filename = null)
  * Handles POST file uploads.
  * @return string         JSON response
  */
-function att_ajax_post()
-{
+function att_ajax_post() {
 	$param_name = 'files';
 	$upload = isset($param_name) ? $_FILES[$param_name] : null;
 	$info = array();
 
-	if ($upload && is_array($upload['tmp_name']))
-	{
+	if ($upload && is_array($upload['tmp_name'])) {
 		// param_name is an array identifier like "files[]",
 		// $_FILES is a multi-dimensional array:
-		foreach (array_keys($upload['tmp_name']) as $index)
-		{
+		foreach (array_keys($upload['tmp_name']) as $index) {
 			$info[] = att_ajax_handle_file_upload(
 				$upload['tmp_name'][$index],
 				isset($_SERVER['HTTP_X_FILE_NAME']) ?
@@ -143,9 +124,7 @@ function att_ajax_post()
 				$index
 			);
 		}
-	}
-	elseif ($upload || isset($_SERVER['HTTP_X_FILE_NAME']))
-	{
+	} elseif ($upload || isset($_SERVER['HTTP_X_FILE_NAME'])) {
 		// param_name is a single object identifier like "file",
 		// $_FILES is a one-dimensional array:
 		$info[] = att_ajax_handle_file_upload(
@@ -166,13 +145,11 @@ function att_ajax_post()
 	$json = json_encode(array('files' => $info));
 	$redirect = isset($_REQUEST['redirect']) ?
 		stripslashes($_REQUEST['redirect']) : null;
-	if ($redirect)
-	{
+	if ($redirect) {
 		header('Location: '.sprintf($redirect, rawurlencode($json)));
 		return;
 	}
-	if (isset($_SERVER['HTTP_ACCEPT']) &&
-		(strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
+	if (isset($_SERVER['HTTP_ACCEPT']) && (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
 		header('Content-type: application/json');
 	} else {
 		header('Content-type: text/plain');
@@ -181,16 +158,14 @@ function att_ajax_post()
 }
 
 // AJAX upload handler
-function att_ajax_handle_file_upload($uploaded_file, $name, $size, $type, $error, $index = null)
-{
+function att_ajax_handle_file_upload($uploaded_file, $name, $size, $type, $error, $index = null) {
 	global $area, $item, $cfg, $db, $db_attach, $usr, $L, $sys;
 
 	$file = new stdClass();
 	$file->name = trim(mb_basename(stripslashes($name)));
 	$file->size = intval($size);
 	$file->type = $type;
-	if (att_ajax_validate($uploaded_file, $file, $error, $index))
-	{
+	if (att_ajax_validate($uploaded_file, $file, $error, $index)) {
 		// Handle form data, e.g. $_REQUEST['description'][$index]
 		//$this->handle_form_data($file, $index);
 
@@ -215,8 +190,7 @@ function att_ajax_handle_file_upload($uploaded_file, $name, $size, $type, $error
 			'att_lastmod'  => $sys['now']
 		));
 
-		if ($affected != 1)
-		{
+		if ($affected != 1) {
 			$file->error = $L['att_err_db'];
 			return $file;
 		}
@@ -225,38 +199,29 @@ function att_ajax_handle_file_upload($uploaded_file, $name, $size, $type, $error
 		$file_path = att_path($area, $item, $id, $file_ext);
 
 		$dir_path = dirname($file_path);
-		if (!file_exists($dir_path))
-		{
+		if (!file_exists($dir_path)) {
 			mkdir($dir_path, $cfg['dir_perms'], true);
 		}
 
 		clearstatcache();
-		if ($uploaded_file && is_uploaded_file($uploaded_file))
-		{
+		if ($uploaded_file && is_uploaded_file($uploaded_file)) {
 			// multipart/formdata uploads (POST method uploads)
 			move_uploaded_file($uploaded_file, $file_path);
-		}
-		else
-		{
+		} else {
 			// Non-multipart uploads (PUT method support)
-			file_put_contents(
-				$file_path,
-				fopen('php://input', 'r'),
-				0
-			);
+			file_put_contents($file_path, fopen('php://input', 'r'), 0);
 		}
 		$file_size = filesize($file_path);
-		if ($file_size === $file->size)
-		{
+		if ($file_size === $file->size) {
 			// Automatic JPG conversion feature
-			if ($cfg['plugin']['attach2']['imageconvert'] && $is_img && $file_ext != 'jpg' && $file_ext != 'jpeg')
-			{
+			if ($cfg['plugin']['attach2']['imageconvert'] && $is_img && $file_ext != 'jpg' && $file_ext != 'jpeg') {
 				$input_file = $file_path;
 				$output_file = att_path($area, $item, $id, 'jpg');
-				if ($file_ext == 'png')
+				if ($file_ext == 'png') {
 					$input = imagecreatefrompng($input_file);
-				else
+				} else {
 					$input = imagecreatefromgif($input_file);
+				}
 				list($width, $height) = getimagesize($input_file);
 				$output = imagecreatetruecolor($width, $height);
 				$white = imagecolorallocate($output,  255, 255, 255);
@@ -268,18 +233,15 @@ function att_ajax_handle_file_upload($uploaded_file, $name, $size, $type, $error
 				$file_ext = 'jpg';
 				$file->name = pathinfo($file->name, PATHINFO_FILENAME) . '.jpg';
 			}
-			if ($is_img)
-			{
+			if ($is_img) {
 				// Fix image orientation via EXIF if possible
-				if (function_exists('exif_read_data'))
-				{
-					$exif = @exif_read_data($file_path);
+				if (function_exists('exif_read_data')) {
+					// $exif = @exif_read_data($file_path);
+					$exif = exif_read_data($file_path);
 					list($width, $height) = getimagesize($file_path);
 					$size_ok = function_exists('cot_img_check_memory') ? cot_img_check_memory($file_path, (int)ceil($width * $height * 4 / 1048576)) : true;
-					if ($size_ok && isset($exif['Orientation']) && !empty($exif['Orientation']) && in_array($exif['Orientation'], array(3, 6, 8)))
-					{
-						switch ($ext)
-						{
+					if ($size_ok && isset($exif['Orientation']) && !empty($exif['Orientation']) && in_array($exif['Orientation'], array(3, 6, 8))) {
+						switch ($ext) {
 							case 'gif':
 								$newimage = imagecreatefromgif($file_path);
 								break;
@@ -292,8 +254,7 @@ function att_ajax_handle_file_upload($uploaded_file, $name, $size, $type, $error
 								$newimage = imagecreatefromjpeg($file_path);
 								break;
 						}
-						switch ($exif['Orientation'])
-						{
+						switch ($exif['Orientation']) {
 							case 3:
 								$newimage = imagerotate($newimage, 180, 0);
 								break;
@@ -304,8 +265,7 @@ function att_ajax_handle_file_upload($uploaded_file, $name, $size, $type, $error
 								$newimage = imagerotate($newimage, 90, 0);
 								break;
 						}
-						switch ($ext)
-						{
+						switch ($ext) {
 							case 'gif':
 								imagegif($newimage, $file_path);
 								break;
@@ -328,9 +288,7 @@ function att_ajax_handle_file_upload($uploaded_file, $name, $size, $type, $error
 			$file->url = $cfg['mainurl'] . '/' . $file_path;
 			$file->thumbnail_url = ($is_img) ? $cfg['mainurl'] . '/' . att_thumb($id) : $cfg['mainurl'] . '/' . att_icon($file_ext);
 			$file->id = $id;
-		}
-		else
-		{
+		} else {
 			unlink($file_path);
 			// Recover db state
 			$db->delete($db_attach, "att_id = $id");
@@ -343,12 +301,10 @@ function att_ajax_handle_file_upload($uploaded_file, $name, $size, $type, $error
 }
 
 // Validates uploaded file
-function att_ajax_validate($uploaded_file, $file, $error)
-{
-	global $area, $item, $L;
+function att_ajax_validate($uploaded_file, $file, $error) {
+	global $area, $item, $L, $cfg;
 
-	if(!cot_auth('plug', 'attach2', 'W'))
-	{
+	if (!cot_auth('plug', 'attach2', 'W')) {
 		$file->error = $L['att_err_perms'];
 		return false;
 	}
@@ -357,12 +313,14 @@ function att_ajax_validate($uploaded_file, $file, $error)
 		$file->error = $error;
 		return false;
 	}
+
 	if (!$file->name) {
 		$file->error = 'missingFileName';
 		return false;
 	}
 
 	$file_ext = att_get_ext($file->name);
+
 	if (!att_check_file($file_ext)) {
 		$file->error = 'acceptFileTypes';
 		return false;
@@ -382,14 +340,11 @@ function att_ajax_validate($uploaded_file, $file, $error)
 		$file->error = 'maxFileSize';
 		return false;
 	}
-	if (1 &&
-		$file_size < 1) {
+	if (1 && $file_size < 1) {
 		$file->error = 'minFileSize';
 		return false;
 	}
-	if ($cfg['plugin']['attach2']['items'] > 0 && (
-			att_count_files($area, $item) >= $cfg['plugin']['attach2']['items'])
-		) {
+	if ($cfg['plugin']['attach2']['items'] > 0 && (att_count_files($area, $item) >= $cfg['plugin']['attach2']['items'])) {
 		$file->error = 'maxNumberOfFiles';
 		return false;
 	}
@@ -410,8 +365,8 @@ function att_ajax_validate($uploaded_file, $file, $error)
 }
 
 // workaround for splitting basename whith beginning utf8 multibyte char
-function mb_basename($filepath, $suffix = NULL)
-{
+// function mb_basename($filepath, $suffix = NULL)
+function mb_basename($filepath, $suffix = '') {
 	$splited = preg_split('/\//', rtrim($filepath, '/ '));
 	return substr(basename('X' . $splited[count($splited) - 1], $suffix), 1);
 }

@@ -4,6 +4,7 @@ Copyright (c) 2008-2012, Vladimir Sibirov.
 All rights reserved. Distributed under BSD License.
 ==================== */
 
+$L['info_name'] = '[SEDBY] Attachments 2';
 $L['info_desc'] = 'Прикрепление изображений и файлов и создание фотогалерей на страницах и постах';
 
 $L['att_add'] = 'Добавить файлы';
@@ -78,3 +79,5 @@ $L['cfg_filespace'] = 'Общее дисковое пространство на
 $L['cfg_imageconvert'] = 'Конвертировать все изображения в JPG при закачке';
 $L['cfg_autoupload'] = 'Начинать закачку автоматически';
 $L['cfg_sequential'] = 'Последовательная загрузка вместо параллельной';
+
+$Ls['att_declDownloads'] = 'скачивание,скачивания,скачиваний';
