@@ -707,8 +707,8 @@ function att_widget($area, $item, $tpl = 'attach2.widget', $width = '100%', $hei
 	$t->assign(array(
 		'ATTACH_AREA'    => $area,
 		'ATTACH_ITEM'    => $item,
-		'ATTACH_EXTS'    => preg_replace('#[^a-zA-Z0-9,]#', '', $cfg['plugin']['attach2']['exts']),
-		'ATTACH_ACCEPT'  => preg_replace('#[^a-zA-Z0-9,*/-]#', '',$cfg['plugin']['attach2']['accept']),
+		'ATTACH_EXTS'    => preg_replace('#[^a-zA-Z0-9,]#', '', Cot::$cfg['plugin']['attach2']['exts']),
+		'ATTACH_ACCEPT'  => preg_replace('#[^a-zA-Z0-9,*/-]#', '', Cot::$cfg['plugin']['attach2']['accept']),
 		'ATTACH_MAXSIZE' => $limits['file'],
 		'ATTACH_WIDTH'   => $width,
 		'ATTACH_HEIGHT'  => $height,
